@@ -174,7 +174,7 @@ footer{margin-top:26px; text-align:center; font-family:'JetBrains Mono',monospac
   <!-- PROJECTS -->
   <div class="tabpage" id="tab-projects">
     <div class="filters">
-      <div class="field"><label>Cari (Tajuk / Ketua / Ahli)</label><input type="text" id="pSearch" placeholder="mis. Arabic, Noor Hanim, chatbot..."></div>
+      <div class="field"><label>Cari (Tajuk / Ketua / Ahli / Staff ID)</label><input type="text" id="pSearch" placeholder="mis. Arabic, Noor Hanim, 172970..."></div>
       <div class="field"><label>Jenis Geran</label><select id="pGrant"><option value="">Semua</option></select></div>
       <div class="field"><label>Tahun Mula</label><select id="pYear"><option value="">Semua</option></select></div>
       <div class="field"><label>Status</label><select id="pStatus"><option value="">Semua</option></select></div>
@@ -190,7 +190,7 @@ footer{margin-top:26px; text-align:center; font-family:'JetBrains Mono',monospac
     <div class="list-head"><h2>Cari Ketua Penyelidik atau Ahli Kumpulan</h2></div>
     <div class="people-search">
       <div class="suggest-box" style="flex:1;">
-        <input type="text" id="personSearch" placeholder="Taip nama pensyarah/staf... mis. Noor Hanim, Anealka, Siti Aeisha">
+        <input type="text" id="personSearch" placeholder="Taip nama ATAU Staff ID... mis. Noor Hanim, 172970">
         <div class="suggest-list" id="personSuggest"></div>
       </div>
     </div>
@@ -352,7 +352,7 @@ function getFilteredProjects(){
     if (y && String(p.yearStart) !== y) return false;
     if (st && p.status !== st) return false;
     if (q){
-      const hay = (p.title+' '+p.leadResearcher+' '+p.members.map(m=>m.name).join(' ')).toLowerCase();
+      const hay = (p.title+' '+p.leadResearcher+' '+(p.leadStaffId||'')+' '+p.members.map(m=>m.name+' '+(m.staffId||'')).join(' ')).toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -387,32 +387,36 @@ document.getElementById('pReset').addEventListener('click', () => {
 });
 
 // ---------- people search tab ----------
-// Build a person index: normalizedName -> { displayName, asLead:[projects], asMember:[{project, type}] }
+// Build a person index: normalizedName -> { displayName, staffIds:Set, asLead:[projects], asMember:[{project, type}] }
 const peopleIndex = {};
 PROJECTS.forEach(p => {
   const leadKey = normalizeName(p.leadResearcher);
   if (leadKey){
-    if (!peopleIndex[leadKey]) peopleIndex[leadKey] = { displayName: p.leadResearcher, asLead: [], asMember: [] };
+    if (!peopleIndex[leadKey]) peopleIndex[leadKey] = { displayName: p.leadResearcher, staffIds: new Set(), asLead: [], asMember: [] };
     peopleIndex[leadKey].asLead.push(p);
+    if (p.leadStaffId) peopleIndex[leadKey].staffIds.add(String(p.leadStaffId).trim());
   }
   p.members.forEach(m => {
     const key = normalizeName(m.name);
     if (!key) return;
-    if (!peopleIndex[key]) peopleIndex[key] = { displayName: m.name, asLead: [], asMember: [] };
+    if (!peopleIndex[key]) peopleIndex[key] = { displayName: m.name, staffIds: new Set(), asLead: [], asMember: [] };
     peopleIndex[key].asMember.push({ project: p, type: m.type });
+    if (m.staffId) peopleIndex[key].staffIds.add(String(m.staffId).trim());
   });
 });
 const peopleList = Object.entries(peopleIndex).map(([key, val]) => ({
-  key, displayName: val.displayName, total: val.asLead.length + val.asMember.length, ...val
+  key, displayName: val.displayName, staffIds: [...val.staffIds], total: val.asLead.length + val.asMember.length, ...val
 })).sort((a,b) => b.total - a.total);
 
 function renderPersonSuggestions(q){
   const box = document.getElementById('personSuggest');
   if (!q){ box.classList.remove('show'); box.innerHTML=''; return; }
   const ql = q.toLowerCase();
-  const matches = peopleList.filter(p => p.displayName.toLowerCase().includes(ql)).slice(0,10);
-  if (!matches.length){ box.innerHTML = '<div class="suggest-item">Tiada padanan.</div>'; box.classList.add('show'); return; }
-  box.innerHTML = matches.map(p => `<div class="suggest-item" data-key="${p.key}">${p.displayName}<span class="cnt">${p.total} projek</span></div>`).join('');
+  const matches = peopleList.filter(p =>
+    p.displayName.toLowerCase().includes(ql) || p.staffIds.some(id => id.toLowerCase().includes(ql))
+  ).slice(0,10);
+  if (!matches.length){ box.innerHTML = '<div class="suggest-item">Tiada padanan nama atau Staff ID.</div>'; box.classList.add('show'); return; }
+  box.innerHTML = matches.map(p => `<div class="suggest-item" data-key="${p.key}">${p.displayName}${p.staffIds.length ? ' <span style="opacity:.55;font-family:\'JetBrains Mono\',monospace;font-size:10.5px;">('+p.staffIds.join(', ')+')</span>' : ''}<span class="cnt">${p.total} projek</span></div>`).join('');
   box.classList.add('show');
   box.querySelectorAll('.suggest-item[data-key]').forEach(el => {
     el.addEventListener('click', () => { showPersonProfile(el.dataset.key); box.classList.remove('show'); });
@@ -434,6 +438,7 @@ function showPersonProfile(key){
   const internalCount = p.asMember.filter(m=>m.type==='Internal').length;
   const externalCount = p.asMember.filter(m=>m.type==='External').length;
   document.getElementById('personStats').innerHTML = `
+    ${p.staffIds.size ? `<span>Staff ID: <b style="color:var(--amber)">${[...p.staffIds].join(', ')}</b></span>` : ''}
     <span>${asLeadCount} projek sebagai <b style="color:var(--rose)">Ketua</b></span>
     <span>${asMemberCount} projek sebagai <b style="color:var(--cyan)">Ahli</b> (${internalCount} Dalaman, ${externalCount} Luaran)</span>
   `;
