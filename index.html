@@ -405,7 +405,7 @@ PROJECTS.forEach(p => {
   });
 });
 const peopleList = Object.entries(peopleIndex).map(([key, val]) => ({
-  key, displayName: val.displayName, staffIds: [...val.staffIds], total: val.asLead.length + val.asMember.length, ...val
+  ...val, key, total: val.asLead.length + val.asMember.length, staffIds: [...val.staffIds]
 })).sort((a,b) => b.total - a.total);
 
 function renderPersonSuggestions(q){
