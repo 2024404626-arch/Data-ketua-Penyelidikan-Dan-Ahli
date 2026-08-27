@@ -147,7 +147,7 @@ footer{margin-top:26px; text-align:center; font-family:'JetBrains Mono',monospac
 
   <header class="top">
     <div>
-      <h1><span class="node-dot"></span>Senarai  Penyelidikan</h1>
+      <h1><span class="node-dot"></span>Direktori Pasukan Penyelidikan</h1>
       <div class="sub">AKADEMI PENGAJIAN BAHASA &nbsp;·&nbsp; KETUA PENYELIDIK &amp; AHLI KUMPULAN BAGI SETIAP GERAN &nbsp;·&nbsp; <span id="totalProjLabel">—</span> PROJEK</div>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
@@ -169,8 +169,8 @@ footer{margin-top:26px; text-align:center; font-family:'JetBrains Mono',monospac
   <div class="tabpage active" id="tab-overview">
     <div class="charts">
       <div class="chart-card"><h3>Top 10 Ketua Penyelidik (Bilangan Projek)</h3><canvas id="chartLeads"></canvas></div>
-      <div class="chart-card"><h3>Ahli: Ahali Dalaman Vs Luaran</h3><canvas id="chartMemberType"></canvas></div>
-      <div class="chart-card"><h3>Purata</h3><canvas id="chartTeamSize"></canvas></div>
+      <div class="chart-card"><h3>Ahli: Dalaman vs Luaran</h3><canvas id="chartMemberType"></canvas></div>
+      <div class="chart-card"><h3>Taburan Saiz Pasukan</h3><canvas id="chartTeamSize"></canvas></div>
     </div>
     <div class="list-head"><h2>Ketua Penyelidik Paling Aktif</h2></div>
     <div class="project-list" id="topLeadsList"></div>
@@ -333,8 +333,8 @@ function computeKpis(){
 
   const kpis = [
     {l:'Jumlah Projek', v:totalProjects, s:'projek unik'},
-    {l:'Ketua Penyelidik Unik', v:leadSet.size, s:'individu'},
-    {l:'Ahli Kumpulan Unik', v:memberSet.size, s:'individu'},
+    {l:'Ketua Penyelidik', v:leadSet.size, s:'individu'},
+    {l:'Ahli Kumpulan', v:memberSet.size, s:'individu'},
     {l:'Purata Saiz Pasukan', v:avgTeam.toFixed(1), s:'orang/projek'},
     {l:'Ahli Dalaman vs Luaran', v:internal+' / '+external, s:'Internal / External'},
   ];
