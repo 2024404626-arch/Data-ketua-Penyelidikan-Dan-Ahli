@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Direktori Penyelidikan — Ringkasan</title>
+<title>Senarai nama Penyelidikan — Ringkasan</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 :root{
@@ -212,7 +212,7 @@ table.simple-table tr:last-child td{border-bottom:none;}
 
 <div class="sidebar">
   <div class="mark">DP</div>
-  <h1>Direktori Penyelidikan</h1>
+  <h1>Senarai Nama Penyelidikan</h1>
   <div class="tagline">Akademi Pengajian Bahasa — Ketua &amp; Ahli Kumpulan Geran</div>
   <div class="divider"></div>
   <div class="side-stat"><div class="n" id="sideTotalProjects">—</div><div class="l">Jumlah Projek</div></div>
@@ -231,8 +231,8 @@ table.simple-table tr:last-child td{border-bottom:none;}
   <div class="tabpage" id="tabpage-ringkasan">
   <div class="topbar">
     <div>
-      <h2>Ringkasan Geran Penyelidikan</h2>
-      <div class="sub">Tapis ikut tahun untuk kemas kini semua carta &amp; KPI serentak</div>
+      <h2>RINGKASAN TENTANG SENARAI NAMA AHLI PENYELIDIKAN</h2>
+      <div class="sub">Tapis ikut tahun untuk kemas kini semua carta &amp; (Projek Intership)</div>
     </div>
     <div class="pillbar" id="yearPills"></div>
   </div>
@@ -269,7 +269,7 @@ table.simple-table tr:last-child td{border-bottom:none;}
       <canvas id="chartYearly"></canvas>
     </div>
     <div class="card">
-      <h3>Komposisi Ahli</h3>
+      <h3>Dalaman Dan Luaran  Ahli APB</h3>
       <div class="card-sub">Dalaman vs Luaran</div>
       <canvas id="chartDonut"></canvas>
     </div>
@@ -283,7 +283,7 @@ table.simple-table tr:last-child td{border-bottom:none;}
       <canvas id="chartGrantType"></canvas>
     </div>
     <div class="card">
-      <h3>Taburan Saiz Pasukan</h3>
+      <h3>Pembahagian saiz kumpulan </h3>
       <div class="card-sub">Ikut status, mengikut kumpulan saiz</div>
       <canvas id="chartTeamSize"></canvas>
     </div>
@@ -385,13 +385,13 @@ table.simple-table tr:last-child td{border-bottom:none;}
         <h3>Trend Projek Mengikut Tahun</h3>
         <div class="card-sub">Bilangan projek ikut status, setiap tahun mula</div>
         <canvas id="chartYearlyP3"></canvas>
-        <p class="chart-note">Nota: Setiap bar mewakili satu tahun mula projek, dipecahkan ikut status (Active / Completed / Completed Conditional). Bar yang tinggi menunjukkan tahun dengan penerimaan geran yang banyak; berguna untuk kesan trend naik/turun permohonan geran dari semasa ke semasa.</p>
+        <p class="chart-note">Nota: Setiap bar mewakili satu tahun dan projek mula dipecahkan mengikut status (Active / Completed / Completed Conditional). Bar yang tertinggi menunjukkan tahun dengan penerimaan geran yang terbanyak. Hal ini sangat berguna untuk menganalisis trend naik/turun permohonan geran dari semasa ke semasa.</p>
       </div>
       <div class="card">
-        <h3>Komposisi Ahli</h3>
+        <h3>Dalaman dan Luaran Ahli APB</h3>
         <div class="card-sub">Dalaman vs Luaran</div>
         <canvas id="chartDonutP3"></canvas>
-        <p class="chart-note">Nota: Nisbah bilangan ahli Dalaman (staf UiTM) berbanding Luaran (kolaborator dari luar) merentasi semua projek dalam tapisan semasa. Bahagian Dalaman yang besar menunjukkan kolaborasi lebih tertumpu dalam organisasi sendiri.</p>
+        <p class="chart-note">Nota: Nisbah bilangan ahli Dalaman (Pensyarah APB UiTM) berbanding Luaran (Ahli luar APB) mengikut semua projek . Bahagian Dalaman yang besar menunjukkan penglibatan yang lebih banyak dalam organisasi sendiri.</p>
       </div>
     </div>
 
@@ -400,26 +400,26 @@ table.simple-table tr:last-child td{border-bottom:none;}
         <h3>Top Jenis Geran</h3>
         <div class="card-sub">Ikut status, 8 teratas</div>
         <canvas id="chartGrantTypeP3"></canvas>
-        <p class="chart-note">Nota: Memaparkan 8 jenis geran paling kerap dimohon, dipecahkan ikut status. Bar terpanjang menunjukkan jenis geran paling popular dalam kalangan penyelidik — berguna untuk perancangan strategi geran akan datang.</p>
+        <p class="chart-note">Nota: Memaparkan 8 jenis geran paling kerap dimohon dan dipecahkan mengikut status. Bar terpanjang menunjukkan jenis geran paling bayak di pilih dalam kalangan penyelidik. Hal ini sangat  berguna untuk perancangan strategi geran akan datang.</p>
       </div>
       <div class="card">
-        <h3>Taburan Saiz Pasukan</h3>
+        <h3>Pembahagian saiz kumpulan</h3>
         <div class="card-sub">Ikut status, mengikut kumpulan saiz</div>
         <canvas id="chartTeamSizeP3"></canvas>
-        <p class="chart-note">Nota: Bilangan projek mengikut saiz pasukan (1–2, 3–4, 5–6, 7+ ahli). Kumpulan saiz kecil (1–2) biasanya projek solo/berpasangan; saiz besar menunjukkan projek kolaboratif berskala lebih besar.</p>
+        <p class="chart-note">Nota: Bilangan projek mengikut saiz kumpulann (1–2, 3–4, 5–6, 7+ ahli). Kumpulan saiz kecil (1–2) biasanya projek persendirian/berpasangan. Saiz besar menunjukkan projek pembahagian ahli kumpulan berskala lebih besar.</p>
       </div>
     </div>
 
     <div class="card" style="margin-top:16px;">
       <h3>Pecahan Ikut Jenis Geran</h3>
-      <div class="card-sub">Jumlah projek, purata saiz pasukan &amp; jumlah kos setiap jenis geran</div>
+      <div class="card-sub">Jumlah projek, purata ahli kumpulan &amp; jumlah kos setiap jenis geran</div>
       <div class="table-scroll" style="max-height:280px;">
         <table class="simple-table">
           <thead><tr><th>Jenis Geran</th><th>Projek</th><th>Purata Ahli</th><th>Kos (RM)</th></tr></thead>
           <tbody id="grantTableBodyP3"></tbody>
         </table>
       </div>
-      <p class="chart-note">Nota: "Purata Ahli" ialah purata saiz pasukan (Ketua + Ahli) bagi jenis geran berkenaan. "Kos (RM)" ialah jumlah kumulatif kos semua projek bagi jenis geran itu — berguna untuk bandingkan jenis geran mana yang paling banyak pelaburan.</p>
+      <p class="chart-note">Nota: "Purata Ahli" ialah purata saiz kumpulan (Ketua + Ahli) bagi jenis geran berkenaan. "Kos (RM)" ialah jumlah tergumpul bagi semua kos projek bagi jenis geran itu — berguna untuk bandingkan jenis geran mana yang paling banyak pelaburan.</p>
     </div>
   </div>
   <!-- /tabpage-carta -->
