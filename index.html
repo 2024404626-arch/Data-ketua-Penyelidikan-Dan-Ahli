@@ -98,6 +98,13 @@ table.simple-table th{
   border-bottom:2px solid var(--line); padding:7px 6px; font-weight:700;
 }
 table.simple-table td{padding:8px 6px; border-bottom:1px solid var(--line); color:var(--ink);}
+.grade-input{
+  width:92px; padding:6px 8px; border:1px solid var(--line); border-radius:6px;
+  font-size:12px; font-family:inherit; color:var(--ink); background:#fff;
+}
+.grade-input:focus{outline:none; border-color:var(--light-teal);}
+.grade-saved{font-size:10px; color:#1E7A57; margin-left:5px;}
+
 table.simple-table tr:last-child td{border-bottom:none;}
 .table-scroll{max-height:230px; overflow-y:auto;}
 .gt-tag{font-size:11px; background:#EEF2F6; color:var(--dark-teal); padding:2px 7px; border-radius:5px; font-weight:600;}
@@ -283,6 +290,13 @@ table.simple-table tr:last-child td{border-bottom:none;}
       <canvas id="chartGrantType"></canvas>
     </div>
     <div class="card">
+      <h3>Analisis Gred Pensyarah</h3>
+      <div class="card-sub">Bilangan pensyarah mengikut gred yang dimasukkan</div>
+      <canvas id="chartLecturerGrade"></canvas>
+      <p class="chart-note">Nota: Gred pensyarah boleh dimasukkan sendiri pada ruangan Gred dalam senarai semua ahli. Carta akan dikemas kini secara automatik berdasarkan gred yang telah diisi.</p>
+    </div>
+
+    <div class="card">
       <h3>Pembahagian saiz kumpulan </h3>
       <div class="card-sub">Ikut status, mengikut kumpulan saiz</div>
       <canvas id="chartTeamSize"></canvas>
@@ -350,10 +364,10 @@ table.simple-table tr:last-child td{border-bottom:none;}
         </div>
       </div>
       <div>
-        <h4 class="subhead">Senarai Semua Ahli Geran (<span id="allMembersCount">0</span>)</h4>
+        <h4 class="subhead">Senarai Semua Ahli Geran (<span id="allMembersCount">0</span>) <span class="card-sub" style="display:inline;">— Gred boleh dimasukkan sendiri</span></h4>
         <div class="table-scroll" style="max-height:320px;">
           <table class="simple-table">
-            <thead><tr><th>Nama</th><th>Staff ID</th><th>Jenis</th><th>Projek</th></tr></thead>
+            <thead><tr><th>Nama</th><th>Staff ID</th><th>Gred Pensyarah</th><th>Jenis</th><th>Projek</th></tr></thead>
             <tbody id="allMembersBody"></tbody>
           </table>
         </div>
@@ -397,6 +411,13 @@ table.simple-table tr:last-child td{border-bottom:none;}
 
     <div class="bottom-row" style="grid-template-columns:1fr 1fr;">
       <div class="card">
+        <h3>Analisis Gred Pensyarah</h3>
+        <div class="card-sub">Pecahan gred berdasarkan data manual</div>
+        <canvas id="chartLecturerGradeP3"></canvas>
+        <p class="chart-note">Nota: Carta menunjukkan bilangan pensyarah bagi setiap gred yang telah dimasukkan secara manual. Jika tiada gred dimasukkan, carta akan memaparkan mesej bahawa data gred belum tersedia.</p>
+      </div>
+      <div class="card">
+        <h3>Top Jenis Geran</h3>
         <h3>Top Jenis Geran</h3>
         <div class="card-sub">Ikut status, 8 teratas</div>
         <canvas id="chartGrantTypeP3"></canvas>
@@ -710,6 +731,66 @@ function renderGrantTable(data){
 // can search by name or Staff ID, list all members, and rank the top
 // contributors across all grants.
 // ===================================================================
+
+// ---------- Gred Pensyarah (input manual) ----------
+let lecturerGrades = {};
+try {
+  lecturerGrades = JSON.parse(localStorage.getItem('apbLecturerGrades') || '{}') || {};
+} catch(e) { lecturerGrades = {}; }
+
+function gradeKey(name, staffId){
+  const sid = (staffId||'').trim();
+  if (sid && sid !== '000000' && sid !== '0' && sid !== '-') return 'id:'+sid;
+  return 'nm:'+normalizeName(name);
+}
+
+function getLecturerGrade(name, staffId){
+  return lecturerGrades[gradeKey(name, staffId)] || '';
+}
+
+function setLecturerGrade(name, staffId, grade){
+  const key = gradeKey(name, staffId);
+  const value = (grade || '').trim();
+  if (value) lecturerGrades[key] = value;
+  else delete lecturerGrades[key];
+  localStorage.setItem('apbLecturerGrades', JSON.stringify(lecturerGrades));
+  renderLecturerGradeCharts(getFiltered());
+}
+
+function renderLecturerGradeCharts(data){
+  const idx = buildPeopleIndex(data);
+  const counts = {};
+  [...idx.values()].forEach(r => {
+    const grade = getLecturerGrade(r.name, r.staffId);
+    if (grade) counts[grade] = (counts[grade] || 0) + 1;
+  });
+  const entries = Object.entries(counts).sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0]));
+  const labels = entries.map(e => e[0]);
+  const values = entries.map(e => e[1]);
+  const chartData = {
+    labels: labels.length ? labels : ['Belum diisi'],
+    datasets: [{
+      label: 'Bilangan Pensyarah',
+      data: labels.length ? values : [0],
+      borderWidth: 1
+    }]
+  };
+  const options = {
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:(ctx)=>' '+ctx.parsed.y+' pensyarah'}}
+    },
+    scales:{
+      y:{beginAtZero:true,ticks:{precision:0}},
+      x:{ticks:{autoSkip:false}}
+    }
+  };
+  buildOrUpdateChart('lecturerGrade', 'chartLecturerGrade', 'bar', chartData, options);
+  buildOrUpdateChart('lecturerGradeP3', 'chartLecturerGradeP3', 'bar', chartData, options);
+}
+
 function buildPeopleIndex(data){
   const map = new Map(); // key -> {name, staffId, leadCount, memberCount, type, projects:[{...}]}
   function keyFor(name, staffId){
@@ -771,15 +852,30 @@ function renderAllMembers(data){
   const countEl = document.getElementById('allMembersCount');
   if (countEl) countEl.textContent = rows.length;
   if (!body) return;
-  if (!rows.length){ body.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--ink-dim); padding:16px;">Tiada data</td></tr>'; return; }
-  body.innerHTML = rows.map(r => `
+  if (!rows.length){ body.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--ink-dim); padding:16px;">Tiada data</td></tr>'; return; }
+  body.innerHTML = rows.map(r => {
+    const grade = getLecturerGrade(r.name, r.staffId);
+    const key = gradeKey(r.name, r.staffId).replace(/"/g,'&quot;');
+    return `
     <tr>
       <td>${r.name}</td>
       <td>${r.staffId && r.staffId!=='000000' ? r.staffId : '—'}</td>
+      <td>
+        <input class="grade-input" type="text" value="${grade.replace(/"/g,'&quot;')}"
+          placeholder="Contoh: DS52" data-grade-key="${key}"
+          aria-label="Gred pensyarah ${r.name.replace(/"/g,'&quot;')}">
+      </td>
       <td>${r.type}</td>
       <td>${r.total}</td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
+
+  body.querySelectorAll('.grade-input').forEach(input => {
+    input.addEventListener('change', () => {
+      const row = rows.find(r => gradeKey(r.name, r.staffId) === input.dataset.gradeKey);
+      if (row) setLecturerGrade(row.name, row.staffId, input.value);
+    });
+  });
 }
 
 // ---------- Search: nama atau Staff ID ----------
@@ -1073,6 +1169,7 @@ function renderAll(){
   renderGrantTypeChart(data);
   renderTeamSizeChart(data);
   renderGrantTable(data);
+  renderLecturerGradeCharts(data);
 
   refreshPeopleIndexCache();
   renderTopPeople(data);
@@ -1093,7 +1190,7 @@ function setupTabs(){
       document.getElementById('tabpage-carta').style.display = btn.dataset.tab === 'carta' ? 'block' : 'none';
       if (btn.dataset.tab === 'carta'){
         // canvases were hidden (0 width) until now — resize once visible
-        ['yearlyP3','donutP3','grantTypeP3','teamSizeP3'].forEach(k => { if (charts[k]) charts[k].resize(); });
+        ['yearlyP3','donutP3','grantTypeP3','teamSizeP3','lecturerGradeP3'].forEach(k => { if (charts[k]) charts[k].resize(); });
       }
     });
   });
