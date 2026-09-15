@@ -172,6 +172,16 @@ table.simple-table tr:last-child td{border-bottom:none;}
 .role-tag.lead{background:rgba(93,202,165,.18); color:#1E7A57;}
 .role-tag.member{background:#E5EEFB; color:#2A5DB0;}
 
+/* Person detail editor */
+.person-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+.person-edit-btn{background:#fff;border:1px solid var(--dark-teal);color:var(--dark-teal);border-radius:7px;padding:7px 11px;font-size:11.5px;font-weight:700;cursor:pointer;}
+.person-edit-btn:hover{background:rgba(93,202,165,.12);}
+.person-detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;}
+.person-detail-item{background:#fff;border:1px solid var(--line);border-radius:7px;padding:9px 11px;}
+.person-detail-item .lbl{font-size:10px;color:var(--ink-dim);font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.person-detail-item .val{font-size:13px;font-weight:700;color:var(--ink);margin-top:3px;}
+@media(max-width:760px){.person-detail-grid{grid-template-columns:1fr 1fr;}}
+
 /* Management project table row actions */
 .mgmt-row-actions{display:flex; gap:6px; justify-content:flex-end;}
 .pager{display:flex; gap:6px; justify-content:center; align-items:center; flex-wrap:wrap;}
@@ -293,7 +303,6 @@ table.simple-table tr:last-child td{border-bottom:none;}
       <h3>Analisis Gred Pensyarah</h3>
       <div class="card-sub">Bilangan pensyarah mengikut gred yang dimasukkan</div>
       <canvas id="chartLecturerGrade"></canvas>
-      <p class="chart-note">Nota: Gred pensyarah boleh dimasukkan sendiri pada ruangan Gred dalam senarai semua ahli. Carta akan dikemas kini secara automatik berdasarkan gred yang telah diisi.</p>
     </div>
 
     <div class="card">
@@ -348,8 +357,12 @@ table.simple-table tr:last-child td{border-bottom:none;}
     </div>
 
     <div id="personSummary" class="person-card" style="display:none;">
-      <h4 id="personName">—</h4>
+      <div class="person-detail-head">
+        <h4 id="personName">—</h4>
+        <button type="button" id="editPersonBtn" class="person-edit-btn">✎ EDIT DETAIL AHLI</button>
+      </div>
       <div id="personStats" class="person-stats"></div>
+      <div id="personDetailGrid" class="person-detail-grid"></div>
     </div>
     <div id="personProjectList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px;"></div>
 
@@ -414,10 +427,12 @@ table.simple-table tr:last-child td{border-bottom:none;}
         <h3>Analisis Gred Pensyarah</h3>
         <div class="card-sub">Pecahan gred berdasarkan data manual</div>
         <canvas id="chartLecturerGradeP3"></canvas>
-        <p class="chart-note">Nota: Carta menunjukkan bilangan pensyarah bagi setiap gred yang telah dimasukkan secara manual. Jika tiada gred dimasukkan, carta akan memaparkan mesej bahawa data gred belum tersedia.</p>
+        <div class="chart-note" style="line-height:1.6;">
+          <strong>Nota Analisis Pensyarah:</strong>
+          Carta ini menunjukkan taburan bilangan pensyarah mengikut <strong>gred pensyarah</strong> yang telah dimasukkan secara manual berdasarkan Staff ID ahli. Setiap bar mewakili satu gred, manakala ketinggian bar menunjukkan jumlah pensyarah bagi gred tersebut. Gred yang mempunyai bilangan tertinggi menunjukkan kumpulan gred yang paling ramai dalam data semasa. Analisis ini boleh digunakan untuk melihat komposisi gred pensyarah, mengenal pasti agihan gred yang dominan serta membantu perancangan dan pemantauan sumber tenaga akademik. Jika gred belum dimasukkan, carta tidak akan mengira pensyarah tersebut dalam analisis. Data gred boleh dikemas kini melalui ruangan <strong>Gred Pensyarah</strong> atau melalui fungsi carian Staff ID dan edit detail ahli.
+        </div>
       </div>
       <div class="card">
-        <h3>Top Jenis Geran</h3>
         <h3>Top Jenis Geran</h3>
         <div class="card-sub">Ikut status, 8 teratas</div>
         <canvas id="chartGrantTypeP3"></canvas>
@@ -482,6 +497,29 @@ table.simple-table tr:last-child td{border-bottom:none;}
       <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px;">
         <button type="button" id="modalCancelBtn" class="mgmt-btn mgmt-btn-outline">BATAL</button>
         <button type="submit" class="mgmt-btn mgmt-btn-primary">SIMPAN PROJEK</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="personEditModal">
+  <div class="modal-box" style="max-width:620px;">
+    <div class="modal-head">
+      <h3>EDIT DETAIL AHLI / PENSYARAH</h3>
+      <button type="button" class="modal-close" id="personEditClose">×</button>
+    </div>
+    <form id="personEditForm">
+      <input type="hidden" id="personEditOldKey">
+      <div class="form-grid">
+        <div class="field"><label>Nama</label><input id="personEditName" required></div>
+        <div class="field"><label>Staff ID</label><input id="personEditStaffId" placeholder="Contoh: 172970"></div>
+        <div class="field"><label>Gred Pensyarah</label><input id="personEditGrade" placeholder="Contoh: DS52 / DS54"></div>
+        <div class="field"><label>Jenis</label><select id="personEditType"><option value="Internal">Internal</option><option value="External">External</option></select></div>
+      </div>
+      <div class="chart-note" style="margin-top:14px;">Perubahan nama, Staff ID dan jenis akan dikemas kini pada semua projek yang menggunakan ahli ini. Gred disimpan secara berasingan dan digunakan untuk carta analisis.</div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
+        <button type="button" id="personEditCancel" class="mgmt-btn mgmt-btn-outline">BATAL</button>
+        <button type="submit" class="mgmt-btn mgmt-btn-primary">SIMPAN PERUBAHAN</button>
       </div>
     </form>
   </div>
@@ -916,28 +954,101 @@ function selectPerson(key){
   if (list) list.classList.remove('open');
   const input = document.getElementById('personSearch');
   if (!entry) return;
-  if (input) input.value = entry.name;
+  if (input) input.value = entry.staffId && entry.staffId!=='000000' ? entry.staffId : entry.name;
   const card = document.getElementById('personSummary');
-  document.getElementById('personName').textContent = entry.name + (entry.staffId && entry.staffId!=='000000' ? ' — Staff ID: ' + entry.staffId : '');
+  document.getElementById('personName').textContent = entry.name;
   document.getElementById('personStats').innerHTML = `
     <div class="stat"><b>${entry.total}</b>Jumlah Projek</div>
     <div class="stat"><b>${entry.leadCount}</b>Sebagai Ketua</div>
     <div class="stat"><b>${entry.memberCount}</b>Sebagai Ahli</div>
     <div class="stat"><b>${entry.type}</b>Jenis</div>
   `;
+  document.getElementById('personDetailGrid').innerHTML = `
+    <div class="person-detail-item"><div class="lbl">Nama</div><div class="val">${escapeHtml(entry.name)}</div></div>
+    <div class="person-detail-item"><div class="lbl">Staff ID</div><div class="val">${entry.staffId && entry.staffId!=='000000' ? escapeHtml(entry.staffId) : '—'}</div></div>
+    <div class="person-detail-item"><div class="lbl">Gred Pensyarah</div><div class="val">${escapeHtml(getLecturerGrade(entry.name, entry.staffId) || 'Belum diisi')}</div></div>
+    <div class="person-detail-item"><div class="lbl">Jenis</div><div class="val">${escapeHtml(entry.type || '—')}</div></div>
+  `;
   card.style.display = 'block';
+  const editBtn = document.getElementById('editPersonBtn');
+  if (editBtn) editBtn.onclick = () => openPersonEdit(entry);
   const listEl = document.getElementById('personProjectList');
   listEl.innerHTML = entry.projects
     .sort((a,b)=>(b.yearStart||0)-(a.yearStart||0))
     .map(pr => `
       <div class="person-proj-row">
         <div style="flex:1; min-width:0;">
-          <div style="font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${pr.title}</div>
-          <div style="font-size:11px; color:var(--ink-dim); margin-top:2px;">${pr.yearStart||'—'} • <span class="gt-tag">${pr.grantType}</span> • ${pr.status}</div>
+          <div style="font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(pr.title)}</div>
+          <div style="font-size:11px; color:var(--ink-dim); margin-top:2px;">${pr.yearStart||'—'} • <span class="gt-tag">${escapeHtml(pr.grantType)}</span> • ${escapeHtml(pr.status)}</div>
         </div>
         <span class="role-tag ${pr.role==='Ketua'?'lead':'member'}">${pr.role}</span>
       </div>
     `).join('');
+}
+
+function escapeHtml(value){
+  return String(value==null?'':value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function openPersonEdit(entry){
+  document.getElementById('personEditOldKey').value = gradeKey(entry.name, entry.staffId);
+  document.getElementById('personEditName').value = entry.name || '';
+  document.getElementById('personEditStaffId').value = (entry.staffId && entry.staffId!=='000000') ? entry.staffId : '';
+  document.getElementById('personEditGrade').value = getLecturerGrade(entry.name, entry.staffId) || '';
+  document.getElementById('personEditType').value = entry.type === 'External' ? 'External' : 'Internal';
+  document.getElementById('personEditModal').classList.add('open');
+}
+
+function closePersonEdit(){
+  const m = document.getElementById('personEditModal');
+  if (m) m.classList.remove('open');
+}
+
+function savePersonEdit(){
+  const oldKey = document.getElementById('personEditOldKey').value;
+  const oldParts = oldKey.startsWith('id:') ? {type:'id', value:oldKey.slice(3)} : {type:'nm', value:oldKey.slice(3)};
+  const oldName = peopleIndexCache.get(oldKey)?.name || '';
+  const oldStaffId = peopleIndexCache.get(oldKey)?.staffId || '';
+  const newName = document.getElementById('personEditName').value.trim();
+  const newStaffId = document.getElementById('personEditStaffId').value.trim();
+  const newGrade = document.getElementById('personEditGrade').value.trim();
+  const newType = document.getElementById('personEditType').value;
+  if (!newName){ alert('Nama wajib diisi.'); return; }
+
+  projectsData.forEach(p => {
+    if (normalizeName(p.leadResearcher) === normalizeName(oldName) && String(p.leadStaffId||'').trim() === String(oldStaffId||'').trim()){
+      p.leadResearcher = newName;
+      if (newStaffId) p.leadStaffId = newStaffId;
+    }
+    (p.members||[]).forEach(m => {
+      const same = normalizeName(m.name) === normalizeName(oldName) && String(m.staffId||'').trim() === String(oldStaffId||'').trim();
+      if (same){
+        m.name = newName;
+        if (newStaffId) m.staffId = newStaffId;
+        m.type = newType;
+      }
+    });
+  });
+
+  // Also update lead type when this person is a project lead.
+  projectsData.forEach(p => {
+    if (normalizeName(p.leadResearcher) === normalizeName(newName) && String(p.leadStaffId||'').trim() === String(newStaffId||'').trim()){
+      // Lead researchers are treated as Internal in the source structure.
+    }
+  });
+
+  const newKey = gradeKey(newName, newStaffId);
+  if (oldKey !== newKey) delete lecturerGrades[oldKey];
+  if (newGrade) lecturerGrades[newKey] = newGrade;
+  else delete lecturerGrades[newKey];
+  localStorage.setItem('apbLecturerGrades', JSON.stringify(lecturerGrades));
+  saveProjectsData();
+  refreshPeopleIndexCache();
+  closePersonEdit();
+  renderAll();
+  // Re-select the edited person after all tables/charts refresh.
+  const refreshed = peopleIndexCache.get(newKey) || peopleIndexCache.get(oldKey);
+  if (refreshed) selectPerson(gradeKey(refreshed.name, refreshed.staffId));
 }
 
 function setupSearch(){
@@ -945,13 +1056,21 @@ function setupSearch(){
   const list = document.getElementById('personSuggest');
   if (!input) return;
   input.addEventListener('input', () => {
-    const matches = searchPeople(input.value);
-    if (!input.value.trim()){ list.classList.remove('open'); return; }
+    const q = input.value.trim();
+    const matches = searchPeople(q);
+    // If a full Staff ID is entered, open the person's full detail immediately.
+    const exact = q ? [...peopleIndexCache.values()].find(r => r.staffId && r.staffId!=='000000' && r.staffId.toLowerCase() === q.toLowerCase()) : null;
+    if (exact){ selectPerson(gradeKey(exact.name, exact.staffId)); return; }
+    if (!q){ list.classList.remove('open'); return; }
     renderPersonSuggest(matches);
   });
   input.addEventListener('focus', () => {
     if (input.value.trim()) renderPersonSuggest(searchPeople(input.value));
   });
+  document.getElementById('personEditClose')?.addEventListener('click', closePersonEdit);
+  document.getElementById('personEditCancel')?.addEventListener('click', closePersonEdit);
+  document.getElementById('personEditForm')?.addEventListener('submit', e => { e.preventDefault(); savePersonEdit(); });
+  document.getElementById('personEditModal')?.addEventListener('click', e => { if (e.target.id === 'personEditModal') closePersonEdit(); });
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.suggest-wrap')) list.classList.remove('open');
   });
