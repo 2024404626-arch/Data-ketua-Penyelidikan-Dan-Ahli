@@ -223,6 +223,29 @@ table.simple-table tr:last-child td{border-bottom:none;}
   .form-grid{grid-template-columns:1fr;}
   .member-row{grid-template-columns:1fr 1fr; grid-template-areas:"name name" "id type" "rm rm";}
 }
+
+.member-directory-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px;}
+.member-directory-search{flex:1;min-width:240px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit;outline:none;}
+.member-directory-search:focus{border-color:var(--light-teal);}
+.member-directory-table input,.member-directory-table select{width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:12.5px;background:#fff;}
+.member-directory-table input:focus,.member-directory-table select:focus{border-color:var(--light-teal);outline:none;}
+.member-edit-btn{border:1px solid var(--line);background:#fff;color:var(--dark-teal);border-radius:6px;padding:6px 9px;cursor:pointer;font-weight:700;font-size:11.5px;}
+.member-edit-btn:hover{background:var(--soft-teal);}
+.member-save-btn{border:1px solid var(--dark-teal);background:var(--dark-teal);color:#fff;border-radius:6px;padding:6px 9px;cursor:pointer;font-weight:700;font-size:11.5px;}
+.member-cancel-btn{border:1px solid var(--line);background:#fff;color:var(--salmon);border-radius:6px;padding:6px 9px;cursor:pointer;font-weight:700;font-size:11.5px;margin-left:4px;}
+.member-directory-note{font-size:12px;color:var(--ink-dim);line-height:1.5;margin:8px 0 0;}
+@media(max-width:800px){.member-directory-table{min-width:850px;}}
+
+.member-directory-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+.member-custom-cell{min-width:120px;}
+.member-custom-input{width:100%;box-sizing:border-box;border:1px solid #d9e5e5;border-radius:7px;padding:7px 8px;font:inherit;background:#fff;}
+.member-custom-input:focus{outline:none;border-color:var(--light-teal);box-shadow:0 0 0 2px rgba(20,140,140,.08);}
+.member-custom-head{white-space:nowrap;}
+.member-column-head-wrap{display:flex;align-items:center;gap:6px;justify-content:space-between;}
+.member-column-delete{border:0;background:none;cursor:pointer;color:#a34b4b;font-weight:800;padding:2px 4px;border-radius:5px;}
+.member-column-delete:hover{background:#fff0f0;}
+.member-column-rename{border:0;background:none;cursor:pointer;color:var(--dark-teal);font-weight:700;padding:2px 4px;border-radius:5px;}
+.member-column-rename:hover{background:#eef8f8;}
 </style>
 </head>
 <body>
@@ -242,6 +265,7 @@ table.simple-table tr:last-child td{border-bottom:none;}
   <div class="tabnav" style="display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--line);">
     <button class="tab-btn active" data-tab="ringkasan" style="background:none; border:none; padding:10px 16px; font-size:13.5px; font-weight:700; color:var(--ink-dim); cursor:pointer; border-bottom:3px solid transparent;">RINGKASAN</button>
     <button class="tab-btn" data-tab="carian" style="background:none; border:none; padding:10px 16px; font-size:13.5px; font-weight:700; color:var(--ink-dim); cursor:pointer; border-bottom:3px solid transparent;">CARIAN &amp; AHLI</button>
+    <button class="tab-btn" data-tab="semua-ahli" style="background:none; border:none; padding:10px 16px; font-size:13.5px; font-weight:700; color:var(--ink-dim); cursor:pointer; border-bottom:3px solid transparent;">SEMUA SENARAI AHLI</button>
     <button class="tab-btn" data-tab="carta" style="background:none; border:none; padding:10px 16px; font-size:13.5px; font-weight:700; color:var(--ink-dim); cursor:pointer; border-bottom:3px solid transparent;">CARTA &amp; NOTA</button>
   </div>
 
@@ -303,6 +327,7 @@ table.simple-table tr:last-child td{border-bottom:none;}
       <h3>Analisis Gred Pensyarah</h3>
       <div class="card-sub">Bilangan pensyarah mengikut gred yang dimasukkan</div>
       <canvas id="chartLecturerGrade"></canvas>
+      <p class="chart-note">Nota: Gred pensyarah boleh dimasukkan sendiri pada ruangan Gred dalam senarai semua ahli. Carta akan dikemas kini secara automatik berdasarkan gred yang telah diisi.</p>
     </div>
 
     <div class="card">
@@ -398,6 +423,33 @@ table.simple-table tr:last-child td{border-bottom:none;}
   </div>
   </div>
   <!-- /tabpage-carian -->
+
+  <div class="tabpage" id="tabpage-semua-ahli" style="display:none;">
+    <div class="topbar">
+      <div>
+        <h2>SEMUA SENARAI AHLI PENYELIDIKAN</h2>
+        <div class="sub">Satu halaman khas untuk melihat dan mengedit semua ahli daripada keseluruhan data projek.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="member-directory-toolbar">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <span class="badge blue" id="directoryMemberCount">0 ahli</span>
+          <span class="card-sub">Data disusun mengikut nama</span>
+        </div>
+        <input id="memberDirectorySearch" class="member-directory-search" type="text" placeholder="Cari nama atau Staff ID...">
+      </div>
+      <div class="table-scroll" style="max-height:650px;">
+        <table class="simple-table member-directory-table">
+          <thead id="memberDirectoryHead"></thead>
+          <tbody id="memberDirectoryBody"></tbody>
+        </table>
+      </div>
+      <p class="member-directory-note">Nota: Tekan <b>EDIT</b> untuk mengubah nama, Staff ID, gred pensyarah atau jenis ahli. Anda juga boleh tekan <b>＋ TAMBAH COLUMN</b> untuk membuat medan tambahan sendiri (contoh: Jawatan, Fakulti, Email, No. Telefon). Nilai column tambahan boleh terus ditaip dan disimpan dalam pelayar ini.</p>
+    </div>
+  </div>
+  <!-- /tabpage-semua-ahli -->
 
   <div class="tabpage" id="tabpage-carta" style="display:none;">
     <div class="topbar">
@@ -510,6 +562,8 @@ table.simple-table tr:last-child td{border-bottom:none;}
     </div>
     <form id="personEditForm">
       <input type="hidden" id="personEditOldKey">
+    <input type="hidden" id="personEditOldName">
+    <input type="hidden" id="personEditOldStaffId">
       <div class="form-grid">
         <div class="field"><label>Nama</label><input id="personEditName" required></div>
         <div class="field"><label>Staff ID</label><input id="personEditStaffId" placeholder="Contoh: 172970"></div>
@@ -916,6 +970,104 @@ function renderAllMembers(data){
   });
 }
 
+// ---------- Direktori semua ahli ----------
+let allPeopleDirectoryCache = [];
+let editingPersonEntry = null;
+let memberCustomColumns = JSON.parse(localStorage.getItem('apbMemberCustomColumns') || '[]');
+let memberCustomData = JSON.parse(localStorage.getItem('apbMemberCustomData') || '{}');
+
+function saveMemberCustomData(){
+  localStorage.setItem('apbMemberCustomColumns', JSON.stringify(memberCustomColumns));
+  localStorage.setItem('apbMemberCustomData', JSON.stringify(memberCustomData));
+}
+
+function customValue(personKey, columnId){
+  return (memberCustomData[personKey] && memberCustomData[personKey][columnId]) || '';
+}
+
+function setCustomValue(personKey, columnId, value){
+  if (!memberCustomData[personKey]) memberCustomData[personKey] = {};
+  memberCustomData[personKey][columnId] = value;
+  saveMemberCustomData();
+}
+
+function renderMemberDirectoryHead(){
+  const head = document.getElementById('memberDirectoryHead');
+  if (!head) return;
+  head.innerHTML = '<tr><th>#</th><th>Nama</th><th>Staff ID</th><th>Gred Pensyarah</th><th>Jenis</th><th>Jumlah Projek</th>' +
+    memberCustomColumns.map(c => `<th class="member-custom-head"><div class="member-column-head-wrap"><span>${escapeHtml(c.name)}</span><span><button type="button" class="member-column-rename" data-rename-column="${escapeHtml(c.id)}" title="Tukar nama column">✎</button><button type="button" class="member-column-delete" data-delete-column="${escapeHtml(c.id)}" title="Padam column">×</button></span></div></th>`).join('') +
+    '<th>Tindakan</th></tr>';
+
+  head.querySelectorAll('[data-rename-column]').forEach(btn => btn.addEventListener('click', () => {
+    const col = memberCustomColumns.find(c => c.id === btn.dataset.renameColumn);
+    if (!col) return;
+    const name = prompt('Nama baru untuk column:', col.name);
+    if (name && name.trim()) { col.name = name.trim(); saveMemberCustomData(); renderMemberDirectory(); }
+  }));
+  head.querySelectorAll('[data-delete-column]').forEach(btn => btn.addEventListener('click', () => {
+    const col = memberCustomColumns.find(c => c.id === btn.dataset.deleteColumn);
+    if (!col) return;
+    if (!confirm(`Padam column "${col.name}"? Data dalam column ini akan dipadam.`)) return;
+    memberCustomColumns = memberCustomColumns.filter(c => c.id !== col.id);
+    Object.keys(memberCustomData).forEach(k => { if (memberCustomData[k]) delete memberCustomData[k][col.id]; });
+    saveMemberCustomData();
+    renderMemberDirectory();
+  }));
+}
+
+function addMemberCustomColumn(){
+  const name = prompt('Masukkan nama column baru (contoh: Jawatan, Fakulti, Email):');
+  if (!name || !name.trim()) return;
+  const id = 'col_' + Date.now();
+  memberCustomColumns.push({id, name:name.trim()});
+  saveMemberCustomData();
+  renderMemberDirectory();
+}
+
+
+function renderMemberDirectory(){
+  const idx = buildPeopleIndex(projectsData);
+  allPeopleDirectoryCache = [...idx.values()].sort((a,b)=>a.name.localeCompare(b.name));
+  renderMemberDirectoryHead();
+  filterMemberDirectory();
+}
+
+function filterMemberDirectory(){
+  const body = document.getElementById('memberDirectoryBody');
+  const count = document.getElementById('directoryMemberCount');
+  const input = document.getElementById('memberDirectorySearch');
+  if (!body) return;
+  const q = (input?.value || '').trim().toLowerCase();
+  const rows = allPeopleDirectoryCache.filter(r => !q || r.name.toLowerCase().includes(q) || (r.staffId||'').toLowerCase().includes(q));
+  if (count) count.textContent = rows.length + ' ahli';
+  const colCount = 7 + memberCustomColumns.length;
+  if (!rows.length){ body.innerHTML=`<tr><td colspan="${colCount}" style="text-align:center;color:var(--ink-dim);padding:20px;">Tiada ahli dijumpai</td></tr>`; return; }
+  body.innerHTML = rows.map((r,i)=>{
+    const key = gradeKey(r.name,r.staffId);
+    const customCells = memberCustomColumns.map(c => {
+      const value = customValue(key,c.id);
+      return `<td class="member-custom-cell"><input class="member-custom-input" type="text" value="${escapeHtml(value).replace(/"/g,'&quot;')}" data-custom-key="${escapeHtml(key)}" data-custom-column="${escapeHtml(c.id)}" placeholder="Taip di sini..."></td>`;
+    }).join('');
+    return `<tr data-person-key="${escapeHtml(key)}">
+      <td>${i+1}</td>
+      <td>${escapeHtml(r.name)}</td>
+      <td>${r.staffId && r.staffId!=='000000' ? escapeHtml(r.staffId) : '—'}</td>
+      <td>${escapeHtml(getLecturerGrade(r.name,r.staffId)||'Belum diisi')}</td>
+      <td>${escapeHtml(r.type||'—')}</td>
+      <td>${r.total}</td>
+      ${customCells}
+      <td><button class="member-edit-btn" data-edit-person="${escapeHtml(key)}">✎ EDIT</button></td>
+    </tr>`;
+  }).join('');
+  body.querySelectorAll('[data-edit-person]').forEach(btn=>btn.addEventListener('click',()=>{
+    const entry = allPeopleDirectoryCache.find(r=>gradeKey(r.name,r.staffId)===btn.dataset.editPerson);
+    if (entry) openPersonEdit(entry);
+  }));
+  body.querySelectorAll('.member-custom-input').forEach(input=>input.addEventListener('change',()=>{
+    setCustomValue(input.dataset.customKey, input.dataset.customColumn, input.value);
+  }));
+}
+
 // ---------- Search: nama atau Staff ID ----------
 let peopleIndexCache = null;
 function refreshPeopleIndexCache(){ peopleIndexCache = buildPeopleIndex(getFiltered()); }
@@ -991,7 +1143,10 @@ function escapeHtml(value){
 }
 
 function openPersonEdit(entry){
+  editingPersonEntry = entry;
   document.getElementById('personEditOldKey').value = gradeKey(entry.name, entry.staffId);
+  document.getElementById('personEditOldName').value = entry.name || '';
+  document.getElementById('personEditOldStaffId').value = entry.staffId || '';
   document.getElementById('personEditName').value = entry.name || '';
   document.getElementById('personEditStaffId').value = (entry.staffId && entry.staffId!=='000000') ? entry.staffId : '';
   document.getElementById('personEditGrade').value = getLecturerGrade(entry.name, entry.staffId) || '';
@@ -1006,9 +1161,8 @@ function closePersonEdit(){
 
 function savePersonEdit(){
   const oldKey = document.getElementById('personEditOldKey').value;
-  const oldParts = oldKey.startsWith('id:') ? {type:'id', value:oldKey.slice(3)} : {type:'nm', value:oldKey.slice(3)};
-  const oldName = peopleIndexCache.get(oldKey)?.name || '';
-  const oldStaffId = peopleIndexCache.get(oldKey)?.staffId || '';
+  const oldName = document.getElementById('personEditOldName').value.trim();
+  const oldStaffId = document.getElementById('personEditOldStaffId').value.trim();
   const newName = document.getElementById('personEditName').value.trim();
   const newStaffId = document.getElementById('personEditStaffId').value.trim();
   const newGrade = document.getElementById('personEditGrade').value.trim();
@@ -1038,6 +1192,11 @@ function savePersonEdit(){
   });
 
   const newKey = gradeKey(newName, newStaffId);
+  if (oldKey !== newKey && memberCustomData[oldKey]) {
+    memberCustomData[newKey] = memberCustomData[oldKey];
+    delete memberCustomData[oldKey];
+    saveMemberCustomData();
+  }
   if (oldKey !== newKey) delete lecturerGrades[oldKey];
   if (newGrade) lecturerGrades[newKey] = newGrade;
   else delete lecturerGrades[newKey];
@@ -1046,6 +1205,7 @@ function savePersonEdit(){
   refreshPeopleIndexCache();
   closePersonEdit();
   renderAll();
+  renderMemberDirectory();
   // Re-select the edited person after all tables/charts refresh.
   const refreshed = peopleIndexCache.get(newKey) || peopleIndexCache.get(oldKey);
   if (refreshed) selectPerson(gradeKey(refreshed.name, refreshed.staffId));
@@ -1070,6 +1230,8 @@ function setupSearch(){
   document.getElementById('personEditClose')?.addEventListener('click', closePersonEdit);
   document.getElementById('personEditCancel')?.addEventListener('click', closePersonEdit);
   document.getElementById('personEditForm')?.addEventListener('submit', e => { e.preventDefault(); savePersonEdit(); });
+  document.getElementById('memberDirectorySearch')?.addEventListener('input', filterMemberDirectory);
+  document.getElementById('addMemberColumnBtn')?.addEventListener('click', addMemberCustomColumn);
   document.getElementById('personEditModal')?.addEventListener('click', e => { if (e.target.id === 'personEditModal') closePersonEdit(); });
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.suggest-wrap')) list.classList.remove('open');
@@ -1293,6 +1455,7 @@ function renderAll(){
   refreshPeopleIndexCache();
   renderTopPeople(data);
   renderAllMembers(data);
+  renderMemberDirectory();
   renderMgmtTable(data);
   updateDataStatus();
 }
@@ -1306,6 +1469,7 @@ function setupTabs(){
       btn.classList.add('active'); btn.style.color = 'var(--dark-teal)'; btn.style.borderBottomColor = 'var(--dark-teal)';
       document.getElementById('tabpage-ringkasan').style.display = btn.dataset.tab === 'ringkasan' ? 'block' : 'none';
       document.getElementById('tabpage-carian').style.display = btn.dataset.tab === 'carian' ? 'block' : 'none';
+      document.getElementById('tabpage-semua-ahli').style.display = btn.dataset.tab === 'semua-ahli' ? 'block' : 'none';
       document.getElementById('tabpage-carta').style.display = btn.dataset.tab === 'carta' ? 'block' : 'none';
       if (btn.dataset.tab === 'carta'){
         // canvases were hidden (0 width) until now — resize once visible
